@@ -3,10 +3,8 @@ const express = require('express'),
       mongoose = require('mongoose'),
       app = express(),
       uriMongo = 'mongodb://localhost:27017/shop', //dirección del puerto donde corre mongodb
-      port = process.env.PORT || 3000; // El puerto puede ser una
-                                      // variable de entorno o el 3000
-
-
+      port = process.env.PORT || 3000, // El puerto puede ser una variable de entorno o el 3000
+      Product = require('./models/product'); //Como no es una librería de npm se indica la ruta
 
 /** Utilizar bodyParser:
 * Para utilizar midelwares se llama al método 'use'
@@ -14,7 +12,9 @@ const express = require('express'),
 app.use(bodyParser.urlencoded({
   extended: false,
 }));
+
 app.use(bodyParser.json());
+
 /** PETICIÓN TIPO GET:
   * @param hola ('/hola') primer parámetro del metodo get de nuestra app
   * es la url que queremos que ESCUCHE este método.
@@ -34,21 +34,52 @@ app.get('/hola/:name', (req, res) => {
 */
 app.get('/api/product', (req, res) => {
   res.status(200).send({
-    products: [],
+    products: []
   })
-});
+})
 
 app.get('/api/product/:productId', (req, res) => {
+// Buscar en la BBDD un objeto con un id
+  let productId = req.params.productId;
 
-});
+  Product.findById(productId, (err, product) => {
+    if (err) return res.status(500).send({menssage: 'Error al realizar la petición ${err}'})
+    if (!product) return res.status(404).send({message: 'El producto no existe'})
+
+    res.status(200).send({product: product})// puede ponerse: res.status(200).send({product})
+  });
+})
+
 // Tipo post
 app.post('/api/product', (req, res) => {
-// accedemos al cuerpo de la petición, con bodyParser como si fuese un json
+/* accedemos al cuerpo de la petición, con bodyParser como si fuese un json
   console.log(req.body);
   res.status(200).send({
     message: 'Producto recibido',
   })
-});
+  */
+  console.log('POST /api/product');
+  console.log(req.body);
+
+  let product = new Product();
+  product.name = req.body.name;
+  product.picture = req.body.picture;
+  product.price = req.body.price;
+  product.category = req.body.category;
+  product.description = req.body.description;
+
+  product.save((err, productStored) => {
+    if (err){
+      res.status(500).send({
+        message: 'Error al salvar en la base de datos el producto: ${err}'
+      })
+    }
+
+    res.status(200).send({
+      product: productStored
+    })
+  })
+})
 
 //Tipo PUT
 app.put('/api/product/:productId', (req, res) => {
@@ -59,12 +90,12 @@ app.put('/api/product/:productId', (req, res) => {
 app.delete('/api/product/:productId', (req, res) => {
 
 })
-mongoose.connect(uriMongo, (err, res) =>{
-  if (err) {
-    return console.log('Error al conectar a la base de datos ...');
-  }else {
-    console.log('Conexión establecida!');
-  };
+
+mongoose.connect(uriMongo, (err, res) => {
+  if(err) throw err
+  //console.log('Error al conectar a la base de datos ...');
+  console.log('Conexión establecida!');
+
   /** Arrancar el server:
     * Metemos el arranque del server dentro del callback de la conexión a
     * mongoose, puesto que es necesario que la base de datos esté corriendo
@@ -72,6 +103,5 @@ mongoose.connect(uriMongo, (err, res) =>{
     */
   app.listen(port, () => {
     console.log(`API REST corriendo en http://localhost:${port}`);
-  });
-
+  })
 })
