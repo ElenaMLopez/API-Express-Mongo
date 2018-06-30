@@ -495,7 +495,7 @@ const jwt = require ('jwt-simple'),
 
 function createToken (user) {
   const payload = {
-    sub: user._id, // Esto no debe hacerse así, puesto q es el id que genera mongo y es muy inseguro, pero por abreviar se deja este id
+    sub: user._id, // Esto no debe hacerse así, puesto que es el id que genera mongo y es muy inseguro, pero por abreviar se deja este id
     iat: moment().unix(),
     exp: moment().add(14, 'days').unix()
   }
@@ -504,3 +504,7 @@ function createToken (user) {
 
 module.exports = createToken;
 ```
+
+## CREAR UN MIDELWARE PARA PROTEGER RUTAS SEGÚN EL USUARIO QUE ACCEDE
+
+### Crear un midelware:
