@@ -452,3 +452,55 @@ module.exports = mongoose.model('User', UserSchema);
 - Si el renderizado del frontend está aislado, en otra parte de forma que nuestra API pueda ser mucho más reutilizable y escalable, lo ideal es que el servidor esté separado de la aplicación cliente, lo ideal es usar TOKENS, de forma que el cliente envía un código a la API, al servidor, y el servidor se encarga de descifrar el código y ver si el usuario tiene acceso y que permisos tiene. de esta forma la lógica cae del lado de cliente, no se guardan sesiones en el servidor y de esta forma queda más ligero. Esta es la opción que se va a tomar, y lo que se utiliza normalmente son los [JSON Web Tokens](https://jwt.io/).
 - JSON Web Token:
 ![JWT](img/JWT.png)
+
+### Autenticación de usuario.
+- Instalar la librería [jwt-simple](https://www.npmjs.com/package/jwt-simple).
+- Crear un controlador que se encargue del registro y la autenticación de usuario dentro de la carpeta controllers:
+
+**controllers/auth.js**
+```javascript
+const mongoose = require ('mongoose'),
+      User= require ('../models/user'),
+
+
+function signUp(req, res){ // Como son controladores de peticiones http y usamos express, reciben como parametro req y res
+  const user = new User({
+    email: req.body.email,
+    displayName: req.body.displayName // La contraseña no se pasa por aquí pq ya está almacenada con la funcionalidad de mongo pre.
+  })
+  user.save((err) => {
+    if (err) res.status(500).send({ message: `Error al crear el usuario ${err}`});
+
+    return res.status(200).send({ token: service.createToken(user) }) // Con service.createToken(user) llamamos a un servicio q vamos a crear
+  })                                                                  // para generar el token.
+}
+
+function signIn(req, res){
+
+};
+
+module.exports = {
+  signUp,
+  signIn
+}
+```
+- Los servicios son funciones que nos permiten realizar acciones dentro del código, y que van a ser reutilizables, por lo que suelen ponerse en un archivo a parte. Se crea la carpeta services, y ahí en el index.js será donde definamos el servicio para crear tokens:
+
+**services/index.js**
+```javascript
+const jwt = require ('jwt-simple'),
+      moment = require ('moment'),
+      config = require ('../config')
+      service = require ('../services');
+
+function createToken (user) {
+  const payload = {
+    sub: user._id, // Esto no debe hacerse así, puesto q es el id que genera mongo y es muy inseguro, pero por abreviar se deja este id
+    iat: moment().unix(),
+    exp: moment().add(14, 'days').unix()
+  }
+  return jwt.encode(payload, config.SECRET_TOKEN) // Agregado en el fichero config! Suele ser un código más complejo
+}
+
+module.exports = createToken;
+```
