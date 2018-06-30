@@ -152,6 +152,11 @@ Y de la misma forma se ha de importar dentro de nuestro index.js
 
     $ DEBUG=* mongodb-compass;
 ```
+- Para arrancar compass:
+```
+$ DEBUG=* mongodb-compass;
+
+```
 
 ### Crear un modelo para la base de datos:
 
@@ -208,7 +213,9 @@ app.put('/api/product/:productId', (req, res) => {
   })
 })
 ```
-### REFACTORIZAR EL CODIGO:
+## REFACTORIZAR EL CODIGO:
+
+### Refactorizando las funciones de tratamiento de la BBDD:
 
 - Index inicial puede verse en index_inicial.js.
 
@@ -303,4 +310,82 @@ module.exports = {
   deleteProduct
 }
 
+```
+
+### Refactorizarndo la llamada a express:
+
+- Se puede modularizar también la conexión a la base de datos
+
+- Crear un archivo app.js, en la carpeta raíz para modularizar lo que es la configuración de express, en este archivo irá todo lo que sea relativo a la configuración de express de index.js.
+```javascript
+const express = require('express'),
+      bodyParser = require('body-parser'),
+      app = express(),
+      ProductControllers = require('./controllers/product'); //Traemos los controladores de la carpeta controllers
+
+/** Utilizar bodyParser:
+* Para utilizar midelwares se llama al método 'use'
+*/
+app.use(bodyParser.urlencoded({
+  extended: false,
+}));
+
+app.use(bodyParser.json());
+
+/** Definir rutas para hacer las Peticiones
+*/
+
+app.get('/api/product', ProductControllers.getProducts); // Tomamos el método getProduct del archivo controllers/product.js
+
+app.get('/api/product/:productId', ProductControllers.getProduct);
+
+// Tipo post
+app.post('/api/product',ProductControllers.addProduct);
+
+//Tipo PUT: actualizar datos.
+app.put('/api/product/:productId', ProductControllers.updateProduct);
+
+// Por ultimo una ruta tipo delete para borrar productos:
+app.delete('/api/product/:productId', ProductControllers.deleteProduct);
+
+module.exports = app;
+```
+
+- Por último vamos a hacer un archivo router.js que tendrá definidas las rutas de nuestra API. Creamos una carpeta routes, y dentro el archivo index.js, donde copiamos las rutas del archivo app.js para dejarlo de la siguiente forma:
+
+**routes/index.js**
+```javascript
+const express = require ('express'),
+      ProductControllers = require ('../controllers/product'),
+      api = express.Router();
+
+api.get('/product', ProductControllers.getProducts); // Tomamos el método getProduct del archivo controllers/product.js
+
+api.get('/product/:productId', ProductControllers.getProduct);
+
+// Tipo post
+api.post('/product',ProductControllers.addProduct);
+
+//Tipo PUT: actualizar datos.
+api.put('/product/:productId', ProductControllers.updateProduct);
+
+// Por ultimo una ruta tipo delete para borrar productos:
+api.delete('/product/:productId', ProductControllers.deleteProduct);
+
+module.exports = api;
+```
+
+### Refactorizando configuración:
+
+- Vamos a crear un archivo dedicado a la configuración, de forma que más adelante si tenemos que cambiar url o alguna configuración concreta lo tengamos en este archivo.
+- En el index.js de la raiz, tenemos la configuración de la llamada a la BBDD de Mongo con una url y también tenemos el puerto. Esto puede llevarse a un fichero de configuración separado, será un fichero en la raiz llamado config. Esportamos el puerto, la base de datos.
+- Es interesante ver que se puede definir una nueva variable de entorno con ```process.env.MONGODB``` para tenerla en producción, y en caso de no existir porque estamos en desarrollo, dejar la que tiene por defecto.
+
+**config.js**
+
+```javascript
+module.exports = {
+  port: process.env.PORT || 3000,
+  db: process.env.MONGODB || 'mongodb://localhost:27017/shop',
+}
 ```

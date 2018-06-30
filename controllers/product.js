@@ -13,11 +13,12 @@ function getProduct (req, res){
 
 };
 function getProducts (req, res){
+  console.log('Entro en product.js dentro de getProduct linea 16');
   Product.find({}, (err, products) => {
     if (err) return res.status(500).send({message: 'Error al realizar la petición de todos los productos'});
     if (!products) return res.status(404).send({message: 'No hay productos que mostrar'});
-
-    res.status(200).send({ products: [] });
+    console.log('Entro en el find product.js - linea 20, y tengo dentro de mongo \n',products);
+    res.status(200).send({ products: products });
   })
 };
 function addProduct (req, res){
@@ -27,8 +28,8 @@ function addProduct (req, res){
       message: 'Producto recibido',
     })
     */
-    console.log('POST /api/product');
-    console.log(req.body);
+    //console.log('POST /api/product');
+    //console.log(req.body);
 
     let product = new Product();
     product.name = req.body.name;
