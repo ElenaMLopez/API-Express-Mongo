@@ -455,9 +455,9 @@ module.exports = mongoose.model('User', UserSchema);
 
 ### Autenticación de usuario.
 - Instalar la librería [jwt-simple](https://www.npmjs.com/package/jwt-simple).
-- Crear un controlador que se encargue del registro y la autenticación de usuario dentro de la carpeta controllers:
+- Crear un controlador que se encargue del registro y la autenticación de usuario dentro de la carpeta controllers, lo llamamos user.js:
 
-**controllers/auth.js**
+**controllers/user.js**
 ```javascript
 const mongoose = require ('mongoose'),
       User= require ('../models/user'),
@@ -508,3 +508,94 @@ module.exports = createToken;
 ## CREAR UN MIDELWARE PARA PROTEGER RUTAS SEGÚN EL USUARIO QUE ACCEDE
 
 ### Crear un midelware:
+
+- Creamos una nueva carpeta para guardar ahí los midelwares, y en ella el archivo auth.js que contendrá un midelware para comprobar si el usuario está autenticado:
+
+**midelwares/auth.js**
+
+```javascript
+const jwt = require ('jwt'),
+      moment = require ('moment'),
+      config = require ('../config');
+
+function isAuth (req, res, next) {
+  if (!req.headers.authorization) {
+    return res.status(403).send({ message: 'No tienes autorización'})
+  }
+
+  const token = req.headers.authorization.split(" ")[1] // Esto nos da el token que nos envía el cliente en las cabeceras
+  const payload = jwt.decode(token, config.SECRET_TOKEN)
+
+  if(payload.exp <= moment().unix()) {
+    return res.stuatus(401).send({ message: "El Token ha expirado"})
+  }
+
+  req.user = payload.sub;
+  next();
+}
+
+module.exports = isAuth;
+```
+- Luego en nuestro routes/index.js, asignamos una nueva ruta que va a ser sólo accesible si se está registrado, por lo que se pasa la ruta, el midelware de autencación y por ultimo el callback para dar la respuesta:
+
+**routes/index.js**
+
+```javascript
+// Ruta privada para probar el midelware authorization. Llamamos al método isAuth del midelware auth.js
+api.get('/private', auth.isAuth, function(req, res) => {
+  res.status(200).send({ message: 'Tienes acceso '})
+});
+```
+## CREAR EL LOGIN DEL CONTROLADOR USER.JS
+
+### Terminar el logIn:
+
+- Vamos a crear una función en el controlador user.js, para crear el login, que estaba sin terminar. Vamso a buscar en la ddbb los usuarios q tengan el email que se pasa por la url y si existe, se crea un token q viaja en las cabeceras y la aplicación en cliente en cada petición, a traves de las cabeceras. Como el cliente lo tendrá almacenado en localStorage, lo envía por la cabecera y el servidor lo descodificará con los parámetros pasados en SECRET_TOKEN y si coincide le dará acceso al usuario:
+
+**controllers/user.js**
+
+```javascript
+const mongoose = require ('mongoose'),
+      User= require ('../models/user'),
+
+
+function signUp(req, res){ // Como son controladores de peticiones http y usamos express, reciben como parametro req y res
+  const user = new User({
+    email: req.body.email,
+    displayName: req.body.displayName // La contraseña no se pasa por aquí pq ya está almacenada con la funcionalidad de mongo pre.
+  })
+  user.save((err) => {
+    if (err) res.status(500).send({ message: `Error al crear el usuario ${err}`});
+
+    return res.status(200).send({ token: service.createToken(user) }) // Con service.createToken(user) llamamos a un servicio que vamos a crear
+  })                                                                  // para generar el token.
+}
+
+function signIn(req, res){ // Login del usuario. Cada petición del usuario manda su token de localStorage.
+  user.find({ email: req.body.email}, (err, user) => {
+    if (err) return res.status(500).send({ message: err });
+    if (!user) return res.status(404).send({ message: 'El usuario no existe'});
+    // Cuando el usuario se loguea correctamente, en request guardamos el usuario y lanzamos un status 200 y mensaje, y guardamos el token,
+    req.user = user;
+    res.status(200).send({
+      message: 'Te has logueado con éxito';
+      token: service.createToken(user) // Dentro del service/index.js
+    })
+  })
+};
+
+module.exports = {
+  signUp,
+  signIn
+}
+```
+
+### Refactorizar el servicio de creación de tokens
+- Vamos a cambiar la lógica de la autorización que se encuentra ahora en el midelware de autencación, cuando en realidad se puede meter en los servicios, puesto que en última instancia es un servicio reutilizable.
+- Antes de eso creamos la función decodeToken en services/index donde ya está la creación del token:
+
+**services/indes.js**
+
+```javascript
+
+```
