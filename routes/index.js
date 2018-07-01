@@ -1,5 +1,6 @@
 const express = require ('express'),
       ProductControllers = require ('../controllers/product'),
+      UserControll = require ('../controllers/user'),
       auth = require ('../midelwares/auth'),
       api = express.Router();
 
@@ -22,5 +23,8 @@ console.log(auth);
 api.get('/private', auth, function (req, res) {
   res.status(200).send({ message: 'Tienes acceso '})
 });
+// Rutas para el alta y logIn:
+api.post('/signup', UserControll.signUp);
+api.post('/signin', UserControll.signIn);
 
 module.exports = api;

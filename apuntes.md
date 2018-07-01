@@ -419,7 +419,8 @@ UserSchema = new Schema ({
   */
 UserSchema.pre('save', (next) => { // Se pasa un parámeto next para que al finalizar se invoque y pueda pasar al siguiente midelware
   let user = this;
-  if(!user.isModified('password')) return next();
+
+  // if(!user.isModified('password')) return next(); se deja comentado porque luego da errores
 
   bcrypt.genSalt(10, (err, salt) =>{
     if(err) return next();
@@ -594,8 +595,74 @@ module.exports = {
 - Vamos a cambiar la lógica de la autorización que se encuentra ahora en el midelware de autencación, cuando en realidad se puede meter en los servicios, puesto que en última instancia es un servicio reutilizable.
 - Antes de eso creamos la función decodeToken en services/index donde ya está la creación del token:
 
-**services/indes.js**
+**services/index.js**
 
 ```javascript
+const jwt = require ('jwt-simple'),
+      moment = require ('moment'),
+      config = require ('../config')
+      service = require ('../services');
 
+function createToken (user) {
+  const payload = {
+    sub: user._id, // Esto no debe hacerse así, puesto q es el id que genera mongo y es muy inseguro, pero por abreviar se deja este id
+    iat: moment().unix(),
+    exp: moment().add(14, 'days').unix()
+  }
+  return jwt.encode(payload, config.SECRET_TOKEN) // Agregado en el fichero config! Suele ser un código más complejo
+}
+
+// Función para descodificar el Token que llega en la cabecera de las peticiones:
+function decodeToken(token) {
+  // neuva funcionalidad de ESMAC6: promesas
+  const decoded = new Promise((resolve, reject) => {
+    try {
+      const payload = jwt.decode(token, config.SECRET_TOKEN);
+
+      if(payload.exp <= moment().unix()) { // Token expirado
+         reject({ // se llama a reject porque hay un error y se va a rechazar en la promesa que se invoca.
+          status: 401,
+          message: 'El Token ha expirado'
+        })
+      } // nos hemos traido esta lógica de midelwares/auth.js (res.stuatus(401).send({ message: "El Token ha expirado"})) y cambiamos la respuesta de express y retornamos lo que se resuelve que es token expirado:
+
+      // En caso de que no haya expirado, comprobamos q el token existe
+      resolve(payload.sub) // pasamos el id de usuario
+    } catch(err){
+      reject({
+        status: 500,
+        message: 'Token no válido'
+      })
+    }
+  })
+  return decoded;
+}
+module.exports = {
+  createToken,
+  decodeToken
+} ;
 ```
+
+## REGISTRAR UN USUARIO
+
+### Dar de alta un usuario para poder autenticarlo después:
+
+- Creamos unas rutas para el alta (signUp) y el login (signIn):
+
+```javascript
+// Rutas para el alta y logIn:
+api.post('/signup', UserControll.signUp);
+api.post('/signin', UserControll.signIn);
+```
+
+- Dentro del gestor de peticiones (en mi caso [Insomnia](https://insomnia.rest/)), damos las claves y valores que se van a enviar por post a la ruta de signUp y enviamos la petición:
+![insomnia](img/signUp.png)
+
+y nos devuelve el token, en este caso por ejemplo es:
+```json
+{
+	"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1YjM4YzdlOGI5YTIyNTY0ODUwYzk3YWMiLCJpYXQiOjE1MzA0NDc4NDgsImV4cCI6MTUzMTY1NzQ0OH0.xEEbVEXtIGfMNMeEBs8Su_Tpt84iwBm0gttdCavXYiU"
+}
+```
+- Una vez dado de alta un usuario, podemos probar a entrar en la ruta privada, enviando el token en la cabecera de la petición precedido de la palabra reservada Bearer (*portador*) por lo que en insomnia pondremos lo siguiente
+![acceso a pagina privada](img/acceso.png)

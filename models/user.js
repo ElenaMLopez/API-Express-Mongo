@@ -19,7 +19,8 @@ UserSchema = new Schema ({
   */
 UserSchema.pre('save', (next) => { // Se pasa un parámeto next para que al finalizar se invoque y pueda pasar al siguiente midelware
   let user = this;
-  if(!user.isModified('password')) return next();
+
+  //if(!user.isModified('password')) return next();
 
   bcrypt.genSalt(10, (err, salt) =>{
     if(err) return next();

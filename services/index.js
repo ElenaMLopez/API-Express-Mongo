@@ -11,6 +11,7 @@ function createToken (user) {
   }
   return jwt.encode(payload, config.SECRET_TOKEN) // Agregado en el fichero config! Suele ser un código más complejo
 }
+
 // Función para descodificar el Token que llega en la cabecera de las peticiones:
 function decodeToken(token) {
   // neuva funcionalidad de ESMAC6: promesas
@@ -34,8 +35,9 @@ function decodeToken(token) {
       })
     }
   })
-  return decode;
-}
+
+  return decoded;
+};
 module.exports = {
   createToken,
   decodeToken
