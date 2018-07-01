@@ -36,4 +36,7 @@ function decodeToken(token) {
   })
   return decode;
 }
-module.exports = createToken;
+module.exports = {
+  createToken,
+  decodeToken
+} ;
