@@ -6,17 +6,44 @@
 
 3. Coger de mla la dirección de la bbdd
 
-```mongodb://<dbuser>:<dbpassword>@ds125381.mlab.com:25381/shop```
+```
+mongodb://<dbuser>:<dbpassword>@ds125381.mlab.com:25381/shop
+
+ ```
 
 4. Instalar heroku en local:
-```sudo snap install heroku --classic```
+
+```
+sudo snap install heroku --classic
+```
 
 5. Loguearse en heroku:
-```heroku login```
+
+```
+heroku login
+```
+
 Introducir los datos del Login
 
 6. Introducir la ruta para la bbdd, sin tarjeta:
-```heroku config:set MONGOHQ_URL="mongodb://foo:bar@alex.mongohq.com:10007/mymongodb"```
 
-ver los logs de HEROKU
-```heroku logs```
+```
+heroku config:set MONGOHQ_URL="mongodb://foo:bar@alex.mongohq.com:10007/mymongodb"
+```
+
+7. Cambiar la variable de entorno en el config.js de   
+
+```
+db: process.env.MONGODB || 'mongodb://localhost:27017/shop'
+```
+
+a
+
+```  
+db: process.env.MONGOHQ_URL || 'mongodb://localhost:27017/shop'
+```
+
+NOTA: ver los logs de HEROKU
+```
+heroku logs
+```
