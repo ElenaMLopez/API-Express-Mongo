@@ -1,9 +1,9 @@
 const mongoose = require ('mongoose'),
-      User= require ('../models/user'),
+      User = require ('../models/user'),
       service = require ('../services');
 
 
-function signUp(req, res){ // Como son controladores de peticiones http y usamos express, reciben como parametro req y res
+function signUp (req, res) { // Como son controladores de peticiones http y usamos express, reciben como parametro req y res
   const user = new User({
     email: req.body.email,
     displayName: req.body.displayName // La contraseña no se pasa por aquí pq ya está almacenada con la funcionalidad de mongo pre.
@@ -16,7 +16,7 @@ function signUp(req, res){ // Como son controladores de peticiones http y usamos
   })                                                                  // para generar el token.
 }
 
-function signIn(req, res){ // Login del usuario. Cada petición del usuario manda su token de localStorage.
+function signIn (req, res) { // Login del usuario. Cada petición del usuario manda su token de localStorage.
   user.find({ email: req.body.email}, (err, user) => {
     if (err) return res.status(500).send({ message: err });
     if (!user) return res.status(404).send({ message: 'El usuario no existe'});
