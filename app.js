@@ -1,8 +1,7 @@
 const express = require('express'),
       bodyParser = require('body-parser'),
       app = express(),
-      api = require ('./routes'),
-      hbs = require ('express-hadlebars');
+      api = require ('./routes');
 /** Utilizar bodyParser:
 * Para utilizar midelwares se llama al método 'use'
 */
@@ -48,9 +47,5 @@ app.use('/api', api); // Se han pasado las rutas a router/index.js
   *Llamada a hadlebars:
   *Framewor para renderizar html con express.¡
   */
-app.engine ('hbs', hbs({
-  layout: default,
-  extension: '.hbs',
-}));
-app.set('view engine', '.hbs');
+
 module.exports = app;

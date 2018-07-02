@@ -17,7 +17,7 @@ function signUp (req, res) { // Como son controladores de peticiones http y usam
 }
 
 function signIn (req, res) { // Login del usuario. Cada petición del usuario manda su token de localStorage.
-  user.find({ email: req.body.email}, (err, user) => {
+  User.find({ email: req.body.email}, (err, user) => {
     if (err) return res.status(500).send({ message: err });
     if (!user) return res.status(404).send({ message: 'El usuario no existe'});
     // Cuando el usuario se loguea correctamente, en request guardamos el usuario y lanzamos un status 200 y mensaje, y guardamos el token.
