@@ -43,7 +43,12 @@ a
 db: process.env.MONGOHQ_URL || 'mongodb://localhost:27017/shop'
 ```
 
-NOTA: ver los logs de HEROKU
+NOTAS:
+a.  ver los logs de HEROKU
 ```
 heroku logs
 ```
+
+b. Recursos:
+
+- Deply en Heroku sin tarjeta de credito: https://geuispuspita.wordpress.com/2014/06/30/how-to-use-mongohq-on-heroku-without-verifying-your-account/
