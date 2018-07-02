@@ -3,3 +3,4 @@ module.exports = {
   db: process.env.MONGODB || 'mongodb://localhost:27017/shop',
   SECRET_TOKEN: 'miSecretoToken'
 }
+// variable de mlab : MONGOHQ_URL

@@ -1,0 +1,21 @@
+<script type="text/javascript">
+  let productList = document.createElement('ul')
+  const myHeaders = new Headers(); // Hay que pasar un objeto para el fetch y lo creamos fuera
+  myHeaders.append('authorization', `Bearer ${localStorage.token}`) // Definimos que tiene la cabecera
+  // Llamamos con fetch a nuestra api a los productos:
+  fetch('/api/product', {
+    method: 'GET',
+    headers: myHeaders
+  })
+  .then (res => res.json())
+  .then (data =>
+    data.products.map(product =>{
+      let text = document.createTextNode(product.name);
+      let elem = document.createElement('li');
+      elem.appendChild(text);
+      productList.appendChild(elem);
+    })
+  )
+  document.body.appendChild(productList);
+
+</script>
