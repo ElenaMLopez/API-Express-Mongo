@@ -53,7 +53,7 @@ app.listen(port, () => {
   */
 
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json);
+app.use(bodyParser.json());
 
 ```
 - Para no tener que estar parando y arrancando el servidor cada vez que hacemos un cambio para poder verlo podemos instalar, en dependencias de desarrollo, la librería nodemon:
