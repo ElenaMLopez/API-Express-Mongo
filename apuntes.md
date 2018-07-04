@@ -48,7 +48,7 @@ app.listen(port, () => {
   console.log(`API REST corriendo en http://localhost:${port}`);
 })
 
-// Utilizar bodyParser:
+/** Utilizar bodyParser:
   * Para utilizar midelwares se llama al método 'use'
   */
 
