@@ -15,11 +15,11 @@
     "crypto": "^1.0.1",
     "express": "4.16.3",
     "express-handlebars": "^3.0.0",
-    "jwt-simple": "^0.5.1",
+    "jwt-simple": "^0.5.6",
     "moment": "^2.22.2",
-    "mongoose": "5.1.7"
+    "mongoose": "^5.10.7"
   },
   "devDependencies": {
-    "nodemon": "^1.17.5"
+    "nodemon": "^2.0.4"
   }
 }
